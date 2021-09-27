@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import pymc3 as pm
 import matplotlib.pyplot as plt
+from random import sample
 import seaborn as sns
 import scipy.stats as ss
 from scipy import optimize
@@ -55,31 +56,6 @@ plt.figure(figsize=(12.5,10))
 sns.distplot(penguin.body_mass_kg.values, label="weight density")
 plt.legend(loc="upper right");
 
-##############################################################################
-# 3.2 FORMULATE PRIORS
-##############################################################################
-
-
-
-
-# # lm = linear_model.LinearRegression()
-# x = penguin.flipper_norm.values.reshape(len(penguin),1)
-# y = penguin.body_mass_kg.values.reshape(len(penguin),1)
-# intercept = np.full((len(penguin),1),1)
-
-# df = pd.DataFrame(intercept)
-# df['x'] = x
-# df.rename(columns={0: 'intercept'})
-
-# lm = OLS(y, df)
-# results = lm.fit()
-# results.summary()
-
-
-# resolution = 100
-# alpha_grid = np.linspace(4.160, 4.244, resolution) # estimate where mu should fall
-# beta_grid = np.linspace(0.656, 0.740, resolution) # estimate where var should fall
-# var_grid = np.linspace(25, 35, resolution) # estimate where var should fall
 
 
 ##############################################################################
@@ -96,13 +72,17 @@ def generate_parameters_prior():
 # 3.3 PRIOR PREDICTIVE
 ##############################################################################
     
-def generate_data(alpha, beta, var, X, num_samples=10):
-    # X = sample_from_x()
-    return ss.norm(alpha + beta*X, np.sqrt(var)).rvs(num_samples)
+# Create a function that samples X that can be used for the final part
+def sample_from_x(num_samples):
+    return sample(list(penguin['flipper_norm']),num_samples)
 
 
-# def sample_from_x(num_samples=10):
-#     return
+def generate_data(alpha, beta, var, num_samples=10):
+    generated_data = []
+    X = sample_from_x(num_samples)
+    for i in range (num_samples):
+        generated_data.append(ss.norm(alpha + beta*X[i], np.sqrt(var)).rvs())
+    return generated_data
 
 
 # PRIOR PREDICTIVE REGRESSION LINES
@@ -112,14 +92,13 @@ for i in range(1000):
   beta = params[1]
   var = params[2]
 
-  Y0 = generate_data(alpha, beta, var, 0)
-  Y1 = generate_data(alpha, beta, var, 1)
+  Y0 = generate_data(alpha, beta, var)
+  Y1 = generate_data(alpha, beta, var)
 
   plt.plot([0, 1], [Y0, Y1], c='gray', alpha=0.1)
 
 plt.xlabel('flipper length')
 plt.ylabel('penguin weight')
-
 
 
 ##############################################################################
@@ -135,7 +114,6 @@ def log_posterior(alpha, beta, var, Y, X):
           ss.norm(50, np.sqrt(200)).logpdf(alpha) +                           # log of the prior on alpha
           ss.norm(0, np.sqrt(100)).logpdf(beta))                              # log of the prior on beta
             
-
 
 def minus_log_posterior(theta):
     alpha = theta[0]
@@ -183,13 +161,41 @@ for i in range(10):  # 10 data sets
   beta = params[1]
   var = params[2]
 
-  Y0 = generate_data(alpha, beta, var, 0, 50)  # simulate 50 measurements at 0
-  Y1 = generate_data(alpha, beta, var, 1, 50)  # simulate 50 measurements at 1
+  Y0 = generate_data(alpha, beta, var, 50)  # simulate 50 measurements at 0
+  Y1 = generate_data(alpha, beta, var, 50)  # simulate 50 measurements at 1
 
-  plt.plot([0, 1], [alpha, alpha + beta], c='blue', alpha=0.1, zorder=-100)
-
-  plt.scatter([0] * 50 + [1] * 50, np.concatenate((Y0, Y1)), c='gray', alpha=0.1, zorder=-100)
+  plt.plot([alpha, alpha + beta], c='blue', alpha=0.1, zorder=-100)
+  plt.plot([alpha, alpha + beta], c='blue', alpha=0.1, zorder=-100)
+   # plt.scatter([0] * 50 + [1] * 50, np.concatenate((Y0, Y1)), c='gray', alpha=0.1, zorder=-100)
 
 plt.xlabel('Flipper Size')
 plt.ylabel('Weight')
-plt.scatter(penguin['body_mass_kg'], penguin['flipper_norm'], s=2, c='red')
+plt.scatter(penguin['flipper_norm'], penguin['body_mass_kg'], s=2, c='red')
+
+
+
+##############################################################################
+# 3.2 ARCHIVE
+##############################################################################
+
+
+
+
+# # lm = linear_model.LinearRegression()
+# x = penguin.flipper_norm.values.reshape(len(penguin),1)
+# y = penguin.body_mass_kg.values.reshape(len(penguin),1)
+# intercept = np.full((len(penguin),1),1)
+
+# df = pd.DataFrame(intercept)
+# df['x'] = x
+# df.rename(columns={0: 'intercept'})
+
+# lm = OLS(y, df)
+# results = lm.fit()
+# results.summary()
+
+
+# resolution = 100
+# alpha_grid = np.linspace(4.160, 4.244, resolution) # estimate where mu should fall
+# beta_grid = np.linspace(0.656, 0.740, resolution) # estimate where var should fall
+# var_grid = np.linspace(25, 35, resolution) # estimate where var should fall
