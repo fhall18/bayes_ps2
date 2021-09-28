@@ -24,7 +24,8 @@ from statsmodels.api import OLS # has better summary stats than sklearn's OLS
 ## Q.3 #######################################################################
 ##############################################################################
 
-penguin = pd.read_csv("data/penguins.csv")
+#penguin = pd.read_csv("data/penguins.csv")
+penguin = pd.read_csv("penguins.csv")
 
 # 3.1 normalize
 
@@ -95,7 +96,7 @@ for i in range(1000):
   Y0 = generate_data(alpha, beta, var)
   Y1 = generate_data(alpha, beta, var)
 
-  plt.plot([0, 1], [Y0, Y1], c='gray', alpha=0.1)
+  plt.plot([0, 7], [Y0, Y1], c='gray', alpha=0.1)
 
 plt.xlabel('flipper length')
 plt.ylabel('penguin weight')
@@ -118,7 +119,7 @@ def log_posterior(alpha, beta, var, Y, X):
 def minus_log_posterior(theta):
     alpha = theta[0]
     beta = theta[1]
-    var = theta[0]
+    var = theta[2]
     Y = penguin['body_mass_kg']
     X = penguin['flipper_norm']
     return - log_posterior(alpha, beta,var,Y,X)
