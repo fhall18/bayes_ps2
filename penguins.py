@@ -78,12 +78,14 @@ def sample_from_x(num_samples):
     return sample(list(penguin['flipper_norm']),num_samples)
 
 
-def generate_data(alpha, beta, var, num_samples=10):
-    generated_data = []
-    X = sample_from_x(num_samples)
-    for i in range (num_samples):
-        generated_data.append(ss.norm(alpha + beta*X[i], np.sqrt(var)).rvs())
-    return generated_data
+# def generate_data(alpha, beta, var, num_samples=10):
+#     generated_data = []
+#     X = sample_from_x(num_samples)
+#     for i in range (num_samples):
+#         generated_data.append(ss.norm(alpha + beta*X[i], np.sqrt(var)).rvs())
+#     return generated_data
+def generate_data(alpha, beta, var, X, num_samples=10):
+  return ss.norm(alpha + beta * X, np.sqrt(var)).rvs(num_samples)
 
 
 # PRIOR PREDICTIVE REGRESSION LINES
@@ -93,13 +95,15 @@ for i in range(1000):
   beta = params[1]
   var = params[2]
 
-  Y0 = generate_data(alpha, beta, var)
-  Y1 = generate_data(alpha, beta, var)
+  Y0 = generate_data(alpha, beta, var, 0)
+  Y1 = generate_data(alpha, beta, var, 1)
 
   plt.plot([0, 7], [Y0, Y1], c='gray', alpha=0.1)
 
 plt.xlabel('flipper length')
 plt.ylabel('penguin weight')
+
+
 
 
 ##############################################################################
@@ -165,8 +169,8 @@ for i in range(10):  # 10 data sets
   Y0 = generate_data(alpha, beta, var, 50)  # simulate 50 measurements at 0
   Y1 = generate_data(alpha, beta, var, 50)  # simulate 50 measurements at 1
 
-  plt.plot([alpha, alpha + beta], c='blue', alpha=0.1, zorder=-100)
-  plt.plot([alpha, alpha + beta], c='blue', alpha=0.1, zorder=-100)
+  plt.plot([-2,2],[alpha, alpha + beta], c='blue', alpha=0.1, zorder=-100)
+  plt.plot([-2,2],[alpha, alpha + beta], c='blue', alpha=0.1, zorder=-100)
    # plt.scatter([0] * 50 + [1] * 50, np.concatenate((Y0, Y1)), c='gray', alpha=0.1, zorder=-100)
 
 plt.xlabel('Flipper Size')
